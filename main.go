@@ -4,10 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
-	"github.com/user/umbra/cmd/daemon"
-	"github.com/user/umbra/cmd/tray"
-	"github.com/user/umbra/cmd/tui"
+	"github.com/AbandonwareDev/umbra/cmd/daemon"
+	"github.com/AbandonwareDev/umbra/cmd/tray"
+	"github.com/AbandonwareDev/umbra/cmd/tui"
 )
 
 func main() {
@@ -40,15 +41,22 @@ func runDaemon(args []string) {
 	vpnDir := fs.String("vpn-dir", "", "Directory with VPN config files (default: ~/.umbra/configs/)")
 	configFile := fs.String("config", "", "Path to extension-mapping config (default: ~/.umbra/config.yaml)")
 	allowUser := fs.String("allow-user", "", "Root mode: username allowed to control the daemon via IPC")
+	trustedPrefixes := fs.String("trusted-prefixes", "/nix/store/,/run/wrappers/bin/,/run/current-system/sw/bin/,/bin/,/sbin/,/usr/bin/,/usr/sbin/,/usr/local/bin/", "Comma-separated list of trusted directory prefixes for VPN commands")
 	fs.Parse(args)
 
+	var tpList []string
+	if *trustedPrefixes != "" {
+		tpList = strings.Split(*trustedPrefixes, ",")
+	}
+
 	opt := daemon.Options{
-		LogFile:    *logFile,
-		NoTray:     *noTray,
-		NoConfig:   *noConfig,
-		VPNDir:     *vpnDir,
-		ConfigFile: *configFile,
-		AllowUser:  *allowUser,
+		LogFile:         *logFile,
+		NoTray:          *noTray,
+		NoConfig:        *noConfig,
+		VPNDir:          *vpnDir,
+		ConfigFile:      *configFile,
+		AllowUser:       *allowUser,
+		TrustedPrefixes: tpList,
 	}
 
 	if err := daemon.Run(opt); err != nil {
@@ -88,6 +96,8 @@ Daemon options:
   -no-config          Skip config file — built-in defaults only (more secure)
   -allow-user <user>  Root mode: grant IPC access to this user (also allows networkmanager group).
                       Required for .systemd-user to resolve the {{allow_user}} placeholder.
+  -trusted-prefixes   Comma-separated list of trusted directory prefixes for VPN command resolution
+                      (default: /nix/store/,/run/wrappers/bin/,/run/current-system/sw/bin/,/bin/,/sbin/,/usr/bin/,/usr/sbin/,/usr/local/bin/)
 
 The daemon monitors a directory for VPN configuration files and runs
 the appropriate VPN command based on file extension.

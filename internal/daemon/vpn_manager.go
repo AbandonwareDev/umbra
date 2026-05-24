@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/user/umbra/internal/config"
-	"github.com/user/umbra/internal/types"
+	"github.com/AbandonwareDev/umbra/internal/config"
+	"github.com/AbandonwareDev/umbra/internal/types"
 )
 
 // maxPkexecRetries limits pkexec re-launch attempts to prevent infinite
@@ -35,21 +35,23 @@ type VPNManager struct {
 	allowUser    string
 	logWriter    io.Writer
 
-	pkexecAttempts map[string]int
+	pkexecAttempts  map[string]int
+	trustedPrefixes []string
 }
 
 // NewVPNManager creates a new Umbra VPN manager.
-func NewVPNManager(cfgDir string, cmdMapping *config.CommandMapping, allowUser string, logWriter io.Writer) *VPNManager {
+func NewVPNManager(cfgDir string, cmdMapping *config.CommandMapping, allowUser string, logWriter io.Writer, trustedPrefixes []string) *VPNManager {
 	return &VPNManager{
-		configs:       make(map[string]*types.VPNConfig),
-		commands:      cmdMapping.Extensions,
-		stopCommands:  cmdMapping.StopCommands,
-		processes:     make(map[string]*exec.Cmd),
-		cancels:       make(map[string]func()),
-		pkexecAttempts: make(map[string]int),
-		configDir:     cfgDir,
-		allowUser:     allowUser,
-		logWriter:     logWriter,
+		configs:         make(map[string]*types.VPNConfig),
+		commands:        cmdMapping.Extensions,
+		stopCommands:    cmdMapping.StopCommands,
+		processes:       make(map[string]*exec.Cmd),
+		cancels:         make(map[string]func()),
+		pkexecAttempts:  make(map[string]int),
+		configDir:       cfgDir,
+		allowUser:       allowUser,
+		logWriter:       logWriter,
+		trustedPrefixes: trustedPrefixes,
 	}
 }
 
@@ -206,6 +208,14 @@ func (m *VPNManager) Start(name string) error {
 		return fmt.Errorf("empty command for %s", name)
 	}
 
+	resolved, err := exec.LookPath(parts[0])
+	if err != nil {
+		return fmt.Errorf("resolving command %q: %w", parts[0], err)
+	}
+	if err := CheckTrustedPrefix(resolved, m.trustedPrefixes); err != nil {
+		return fmt.Errorf("untrusted command %q: %w", resolved, err)
+	}
+
 	// Service-type extensions (those with a stop command) use a different
 	// lifecycle: run the start command and wait for it, then mark as running
 	// without tracking a process. The stop command handles stopping.
@@ -285,6 +295,13 @@ func (m *VPNManager) stopLocked(name string) error {
 		m.log(fmt.Sprintf("Stopping service %s: %s", name, cmdLine))
 		parts := strings.Fields(cmdLine)
 		if len(parts) > 0 {
+			resolved, err := exec.LookPath(parts[0])
+			if err != nil {
+				return fmt.Errorf("resolving command %q: %w", parts[0], err)
+			}
+			if err := CheckTrustedPrefix(resolved, m.trustedPrefixes); err != nil {
+				return fmt.Errorf("untrusted command %q: %w", resolved, err)
+			}
 			cmd := exec.Command(parts[0], parts[1:]...)
 			cmd.Dir = "/tmp"
 			if output, err := cmd.CombinedOutput(); err != nil {
@@ -440,12 +457,23 @@ func (m *VPNManager) startWithPkexec(name, template string) error {
 		return fmt.Errorf("empty command")
 	}
 
+	resolvedParts0, err := exec.LookPath(parts[0])
+	if err != nil {
+		return fmt.Errorf("resolving command %q: %w", parts[0], err)
+	}
+	if err := CheckTrustedPrefix(resolvedParts0, m.trustedPrefixes); err != nil {
+		return fmt.Errorf("untrusted command %q: %w", resolvedParts0, err)
+	}
+
 	// Try pkexec first, then fall back to kdesu.
 	elevators := []string{"pkexec", "kdesu"}
 	var elevPath string
 	for _, e := range elevators {
 		if p, err := exec.LookPath(e); err == nil {
 			elevPath = p
+			if err := CheckTrustedPrefix(elevPath, m.trustedPrefixes); err != nil {
+				return fmt.Errorf("untrusted elevator %q: %w", elevPath, err)
+			}
 			break
 		}
 	}
@@ -454,7 +482,7 @@ func (m *VPNManager) startWithPkexec(name, template string) error {
 	}
 
 	var cmd *exec.Cmd
-	if elevPath == "kdesu" {
+	if filepath.Base(elevPath) == "kdesu" {
 		// kdesu -c "full command line"
 		cmd = exec.Command(elevPath, "-c", cmdLine)
 	} else {

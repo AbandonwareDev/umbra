@@ -6,7 +6,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/user/umbra/internal/types"
+	"github.com/AbandonwareDev/umbra/internal/types"
 )
 
 const (
@@ -35,8 +35,8 @@ type Request struct {
 
 // Response is sent from the daemon back to the TUI.
 type Response struct {
-	Success bool             `json:"success"`
-	Error   string           `json:"error,omitempty"`
+	Success bool              `json:"success"`
+	Error   string            `json:"error,omitempty"`
 	Configs []types.VPNConfig `json:"configs,omitempty"`
 }
 

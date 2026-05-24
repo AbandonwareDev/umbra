@@ -1,4 +1,4 @@
-module github.com/user/umbra
+module github.com/AbandonwareDev/umbra
 
 go 1.25.9
 

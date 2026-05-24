@@ -3,8 +3,8 @@ package tui
 import (
 	"fmt"
 
-	"github.com/user/umbra/internal/config"
-	"github.com/user/umbra/internal/tui"
+	"github.com/AbandonwareDev/umbra/internal/config"
+	"github.com/AbandonwareDev/umbra/internal/tui"
 )
 
 func Run() error {

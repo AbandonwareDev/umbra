@@ -14,10 +14,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/AbandonwareDev/umbra/internal/config"
+	"github.com/AbandonwareDev/umbra/internal/ipc"
+	"github.com/AbandonwareDev/umbra/internal/types"
 	"github.com/gogpu/systray"
-	"github.com/user/umbra/internal/config"
-	"github.com/user/umbra/internal/ipc"
-	"github.com/user/umbra/internal/types"
 )
 
 // iconSize is the tray icon dimension (square).

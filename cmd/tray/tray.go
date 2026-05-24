@@ -3,8 +3,8 @@ package tray
 import (
 	"fmt"
 
-	"github.com/user/umbra/internal/config"
-	"github.com/user/umbra/internal/tray"
+	"github.com/AbandonwareDev/umbra/internal/config"
+	"github.com/AbandonwareDev/umbra/internal/tray"
 )
 
 func Run() error {

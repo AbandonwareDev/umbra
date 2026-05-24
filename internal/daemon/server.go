@@ -9,35 +9,37 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/user/umbra/internal/config"
-	"github.com/user/umbra/internal/ipc"
-	"github.com/user/umbra/internal/types"
+	"github.com/AbandonwareDev/umbra/internal/config"
+	"github.com/AbandonwareDev/umbra/internal/ipc"
+	"github.com/AbandonwareDev/umbra/internal/types"
 )
 
 // Server is the daemon's IPC server. It listens on a Unix socket
 // and handles commands from the TUI or tray app.
 type Server struct {
-	socketPath  string
-	manager     *VPNManager
-	listener    net.Listener
-	wg          sync.WaitGroup
-	quit        chan struct{}
-	logWriter   io.Writer
-	allowedUID  int           // non-zero = restrict IPC to this UID (root mode)
-	allowedGIDs map[int]bool  // additionally authorize users in these groups
+	socketPath      string
+	manager         *VPNManager
+	listener        net.Listener
+	wg              sync.WaitGroup
+	quit            chan struct{}
+	logWriter       io.Writer
+	allowedUID      int          // non-zero = restrict IPC to this UID (root mode)
+	allowedGIDs     map[int]bool // additionally authorize users in these groups
+	trustedPrefixes []string
 }
 
 // NewServer creates a new IPC server.
 // allowedUID and allowedGIDs control peer credential authorization:
 // zero allowedUID means no restriction (user mode / root-only socket).
-func NewServer(paths *config.AppPaths, cmdMapping *config.CommandMapping, logWriter io.Writer, allowedUID int, allowedGIDs map[int]bool, allowUser string) *Server {
+func NewServer(paths *config.AppPaths, cmdMapping *config.CommandMapping, logWriter io.Writer, allowedUID int, allowedGIDs map[int]bool, allowUser string, trustedPrefixes []string) *Server {
 	return &Server{
-		socketPath:  paths.SocketPath,
-		manager:     NewVPNManager(paths.ConfigDir, cmdMapping, allowUser, logWriter),
-		quit:        make(chan struct{}),
-		logWriter:   logWriter,
-		allowedUID:  allowedUID,
-		allowedGIDs: allowedGIDs,
+		socketPath:      paths.SocketPath,
+		manager:         NewVPNManager(paths.ConfigDir, cmdMapping, allowUser, logWriter, trustedPrefixes),
+		quit:            make(chan struct{}),
+		logWriter:       logWriter,
+		allowedUID:      allowedUID,
+		allowedGIDs:     allowedGIDs,
+		trustedPrefixes: trustedPrefixes,
 	}
 }
 

@@ -10,19 +10,20 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/user/umbra/internal/config"
-	"github.com/user/umbra/internal/daemon"
-	"github.com/user/umbra/internal/tray"
+	"github.com/AbandonwareDev/umbra/internal/config"
+	"github.com/AbandonwareDev/umbra/internal/daemon"
+	"github.com/AbandonwareDev/umbra/internal/tray"
 	"os/user"
 )
 
 type Options struct {
-	LogFile    string
-	NoTray     bool
-	NoConfig   bool   // When true, only use built-in command defaults — no config.yaml read or written
-	VPNDir     string // Custom directory for VPN config files; empty uses ~/.umbra/configs/
-	ConfigFile string // Custom path to extension-mapping config; empty uses ~/.umbra/config.yaml
-	AllowUser  string // Root mode: username allowed to connect via IPC
+	LogFile         string
+	NoTray          bool
+	NoConfig        bool     // When true, only use built-in command defaults — no config.yaml read or written
+	VPNDir          string   // Custom directory for VPN config files; empty uses ~/.umbra/configs/
+	ConfigFile      string   // Custom path to extension-mapping config; empty uses ~/.umbra/config.yaml
+	AllowUser       string   // Root mode: username allowed to connect via IPC
+	TrustedPrefixes []string // Trusted directory prefixes for VPN command validation
 }
 
 func Run(opt Options) error {
@@ -116,7 +117,7 @@ func Run(opt Options) error {
 	log.SetOutput(logWriter)
 
 	// Create and start the daemon server with authorization info.
-	srv := daemon.NewServer(paths, cmdMapping, logWriter, allowedUID, allowedGIDs, opt.AllowUser)
+	srv := daemon.NewServer(paths, cmdMapping, logWriter, allowedUID, allowedGIDs, opt.AllowUser, opt.TrustedPrefixes)
 
 	// Handle graceful shutdown
 	sigCh := make(chan os.Signal, 1)

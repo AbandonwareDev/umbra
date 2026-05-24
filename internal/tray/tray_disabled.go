@@ -2,7 +2,7 @@
 
 package tray
 
-import "github.com/user/umbra/internal/config"
+import "github.com/AbandonwareDev/umbra/internal/config"
 
 func Run(paths *config.AppPaths) {
 	// Tray disabled. Build without tags (default) to enable tray.

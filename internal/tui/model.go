@@ -13,9 +13,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/user/umbra/internal/config"
-	"github.com/user/umbra/internal/ipc"
-	"github.com/user/umbra/internal/types"
+	"github.com/AbandonwareDev/umbra/internal/config"
+	"github.com/AbandonwareDev/umbra/internal/ipc"
+	"github.com/AbandonwareDev/umbra/internal/types"
 )
 
 // ── Colors ──
@@ -50,24 +50,24 @@ var (
 	errorStyle   = lipgloss.NewStyle().Foreground(errRed)
 	dimStyle     = lipgloss.NewStyle().Foreground(dark)
 	subtleStyle  = lipgloss.NewStyle().Foreground(subtle)
-	itemStyle = lipgloss.NewStyle().PaddingLeft(2)
+	itemStyle    = lipgloss.NewStyle().PaddingLeft(2)
 
 	selStyle = lipgloss.NewStyle().
-		PaddingLeft(2).
-		Foreground(titleFg).
-		Background(accent)
+			PaddingLeft(2).
+			Foreground(titleFg).
+			Background(accent)
 
 	errorBoxStyle = lipgloss.NewStyle().
-		Background(errRed).
-		Foreground(titleFg).
-		Padding(0, 1)
+			Background(errRed).
+			Foreground(titleFg).
+			Padding(0, 1)
 
 	spinnerStyle = lipgloss.NewStyle().Foreground(accent)
 
 	badgeStyle = lipgloss.NewStyle().
-		Foreground(dark).
-		Background(lipgloss.Color("#2A2A2A")).
-		Padding(0, 1)
+			Foreground(dark).
+			Background(lipgloss.Color("#2A2A2A")).
+			Padding(0, 1)
 )
 
 // ── Key bindings ──
@@ -211,8 +211,6 @@ func (d vpnDelegate) Render(w io.Writer, m list.Model, index int, listItem list.
 	fmt.Fprintln(w, lipgloss.NewStyle().PaddingLeft(2).Foreground(dark).Width(m.Width()).Render(fmt.Sprintf("%s %s", badge, typeInfo)))
 }
 
-
-
 // ── Messages ──
 
 type (
@@ -224,9 +222,9 @@ type (
 		status types.VPNStatus
 		err    error
 	}
-	errorMsg       struct{ err error }
-	connectedMsg   struct{ socketPath string }
-	daemonDeadMsg  struct{}
+	errorMsg      struct{ err error }
+	connectedMsg  struct{ socketPath string }
+	daemonDeadMsg struct{}
 )
 
 // ── Model ──
@@ -321,7 +319,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
-		m.height = msg.Height -3
+		m.height = msg.Height - 3
 		m.helpModel.Width = msg.Width
 
 		listW := m.width * 60 / 100
@@ -373,7 +371,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		// Calculate list Y position in terminal
-		listY := 1  // title bar
+		listY := 1 // title bar
 		// listY += 4  // blank lines before list
 		if m.loading && m.connected {
 			listY += 2 // spinner
@@ -506,7 +504,7 @@ func (m Model) View() string {
 	if fill < 0 {
 		fill = 0
 	}
-	
+
 	b.WriteString(titleBarStyle.Render(strings.Repeat(" ", titleOffset)))
 	b.WriteString(titleLeft)
 	b.WriteString(titleBarStyle.Render(strings.Repeat(" ", fill)))

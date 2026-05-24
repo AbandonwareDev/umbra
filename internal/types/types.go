@@ -26,13 +26,13 @@ func (s VPNStatus) String() string {
 
 // VPNConfig represents a VPN configuration file and its current state.
 type VPNConfig struct {
-	Name       string    `json:"name"`
-	Path       string    `json:"path"`
-	Extension  string    `json:"extension"`
-	Status     VPNStatus `json:"status"`
-	PID        int       `json:"pid,omitempty"`
-	ErrorMsg   string    `json:"error_msg,omitempty"`
-	StartedAt  time.Time `json:"started_at,omitempty"`
+	Name      string    `json:"name"`
+	Path      string    `json:"path"`
+	Extension string    `json:"extension"`
+	Status    VPNStatus `json:"status"`
+	PID       int       `json:"pid,omitempty"`
+	ErrorMsg  string    `json:"error_msg,omitempty"`
+	StartedAt time.Time `json:"started_at,omitempty"`
 }
 
 // TrayMode controls whether the tray icon is active.

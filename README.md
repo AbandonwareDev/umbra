@@ -5,10 +5,77 @@ Daemon + TUI + tray. Monitors a folder for different VPN configs. One daemon to 
 ## Quick start
 
 ```bash
-go install .
+# go install .
+go install github.com/AbandonwareDev/umbra@main
 sudo umbra daemon -no-config -vpn-dir /yourVPNsFolder -allow-user $USER
 umbra tui
 umbra tray          # standalone tray, separate terminal
+```
+
+## NixOS / Flake
+
+This repo includes a `flake.nix` with a package derivation and NixOS service module.
+
+```bash
+# Try it without installing (tray variant):
+nix run github:AbandonwareDev/umbra -- help
+nix run github:AbandonwareDev/umbra -- daemon -no-config -vpn-dir /yourVPNsFolder
+
+# Headless variant (no tray dependency):
+nix run github:AbandonwareDev/umbra#umbra-headless -- help
+```
+
+### NixOS module
+
+Add to your flake inputs:
+
+```nix
+inputs = {
+  nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  umbra.url = "github:AbandonwareDev/umbra";
+};
+```
+
+Import the module and enable the service:
+
+```nix
+{
+  imports = [ umbra.nixosModules.umbra ];
+
+  services.umbra.enable = true;
+  services.umbra.vpnDir = "/etc/umbra/configs";
+  services.umbra.allowUser = "alice";
+}
+```
+
+Available options:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enable` | bool | `false` | Enable the Umbra VPN daemon |
+| `package` | package | `pkgs.umbra-headless` | Umbra package (defaults to headless for server mode) |
+| `vpnDir` | path | `/etc/umbra/configs` | Directory with VPN config files |
+| `configFile` | nullOr path | `null` | Extension-mapping config (null = built-in defaults) |
+| `noConfig` | bool | `true` | Skip config.yaml — built-in defaults only (more secure). Ignored when configFile is set |
+| `logFile` | nullOr path | `null` | Log file path (null = journald) |
+| `allowUser` | nullOr str | `null` | Username allowed to control daemon via IPC |
+| `trustedPrefixes` | listOf str | `[ "/nix/store/" ... ]` | Allowed command path prefixes |
+| `extraArgs` | listOf str | `[]` | Extra CLI arguments |
+
+The service runs as root with systemd hardening (`NoNewPrivileges`, `ProtectHome`,
+`ProtectSystem`, `PrivateTmp`). Trusted-command validation is enforced at the
+code level via the `-trusted-prefixes` flag — only binaries under the listed
+prefixes (e.g., `/nix/store/`, `/run/wrappers/bin/`, `/usr/bin/`) may be executed
+as VPN start/stop commands.
+
+### Local development
+
+```bash
+git clone https://github.com/AbandonwareDev/umbra
+cd umbra
+nix flake check --impure
+nix build .#umbra-headless
+./result/bin/umbra daemon --help
 ```
 
 ## Modes
