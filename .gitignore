@@ -1,0 +1,6 @@
+build/
+umbra
+umbra-headless
+*.exe
+*.test
+*.out
