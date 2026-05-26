@@ -23,10 +23,10 @@ in {
     };
 
     vpnDir = mkOption {
-      type = types.path;
-      default = "/etc/umbra/configs";
-      defaultText = literalExpression ''"/etc/umbra/configs"'';
-      description = "Directory with VPN config files.";
+      type = types.str;
+      default = "/var/lib/umbra/configs";
+      defaultText = literalExpression ''"/var/lib/umbra/configs"'';
+      description = "Directory with VPN config files (StateDirectory-managed).";
     };
 
     configFile = mkOption {
@@ -100,10 +100,11 @@ in {
               ${lib.optionalString (cfg.allowUser != null) "-allow-user ${cfg.allowUser}"} \
               ${lib.escapeShellArgs cfg.extraArgs}
           '';
+          StateDirectory = [ "umbra" ];
+          StateDirectoryMode = "0700";
           NoNewPrivileges = true;
           ProtectHome = true;
           ProtectSystem = "strict";
-          ReadWritePaths = [ cfg.vpnDir ];
           PrivateTmp = true;
           CapabilityBoundingSet = "";
         };
