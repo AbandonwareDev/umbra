@@ -84,6 +84,7 @@ in {
         description = "Umbra VPN Controller Daemon";
         after = [ "network.target" ];
         wantedBy = [ "multi-user.target" ];
+        environment.PATH = "/run/wrappers/bin:/nix/profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin";
 
         serviceConfig = {
           User = "root";
@@ -111,15 +112,15 @@ in {
       };
 
       # Ensure vpnDir exists
-      systemd.tmpfiles.rules = [
-        "d ${cfg.vpnDir} 0755 root root -"
-      ];
+      # systemd.tmpfiles.rules = [
+      #   "d ${cfg.vpnDir} 0755 root root -"
+      # ];
 
-      # Informational warning about VPN packages
-      warnings = optional (cfg.enable) ''
-        Umbra VPN daemon is enabled. Ensure VPN client packages (e.g., wireguard-tools, openvpn)
-        are installed if needed. Set services.umbra.package to configure the umbra binary.
-      '';
+      # # Informational warning about VPN packages
+      # warnings = optional (cfg.enable) ''
+      #   Umbra VPN daemon is enabled. Ensure VPN client packages (e.g., wireguard-tools, openvpn)
+      #   are installed if needed. Set services.umbra.package to configure the umbra binary.
+      # '';
     })
   ];
 }
