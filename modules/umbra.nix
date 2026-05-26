@@ -100,13 +100,13 @@ in {
               ${lib.optionalString (cfg.allowUser != null) "-allow-user ${cfg.allowUser}"} \
               ${lib.escapeShellArgs cfg.extraArgs}
           '';
-          StateDirectory = [ "umbra" ];
-          StateDirectoryMode = "0700";
-          NoNewPrivileges = true;
+          # StateDirectory = [ "umbra" ];
+          # StateDirectoryMode = "0700";
+          # NoNewPrivileges = true;
           ProtectHome = true;
-          ProtectSystem = "strict";
+          # ProtectSystem = "strict";
           PrivateTmp = true;
-          CapabilityBoundingSet = "";
+          # CapabilityBoundingSet = "";
         };
       };
 
