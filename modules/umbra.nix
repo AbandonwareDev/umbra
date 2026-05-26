@@ -84,7 +84,7 @@ in {
         description = "Umbra VPN Controller Daemon";
         after = [ "network.target" ];
         wantedBy = [ "multi-user.target" ];
-        environment.PATH = "/run/wrappers/bin:/nix/profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin";
+        environment.PATH = lib.mkForce "/run/wrappers/bin:/nix/profile/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin";
 
         serviceConfig = {
           User = "root";
