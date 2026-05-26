@@ -2,6 +2,8 @@
 
 Daemon + TUI + tray. Monitors a folder for different VPN configs. One daemon to rule all VPN services
 
+![tui.png](./tui.png)
+
 ## Quick start
 
 ```bash
