@@ -103,9 +103,9 @@ in {
           # StateDirectory = [ "umbra" ];
           # StateDirectoryMode = "0700";
           # NoNewPrivileges = true;
-          ProtectHome = true;
+          # ProtectHome = true;
           # ProtectSystem = "strict";
-          PrivateTmp = true;
+          # PrivateTmp = true;
           # CapabilityBoundingSet = "";
         };
       };
