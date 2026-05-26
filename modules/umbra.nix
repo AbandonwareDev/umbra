@@ -103,6 +103,7 @@ in {
           NoNewPrivileges = true;
           ProtectHome = true;
           ProtectSystem = "strict";
+          ReadWritePaths = [ cfg.vpnDir ];
           PrivateTmp = true;
           CapabilityBoundingSet = "";
         };
