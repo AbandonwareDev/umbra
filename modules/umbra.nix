@@ -12,7 +12,6 @@ let
     umbra-headless = final.callPackage ../pkgs/umbra/default.nix { buildHeadless = true; };
   };
 in {
-  nixpkgs.overlays = [ umbraOverlay ];
   options.services.umbra = {
     enable = mkEnableOption "Umbra VPN controller daemon";
 
@@ -76,44 +75,49 @@ in {
     };
   };
 
-  config = mkIf cfg.enable {
-    systemd.services.umbra = {
-      description = "Umbra VPN Controller Daemon";
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
+  config = mkMerge [
+    # Unconditional: always add the overlay when this module is imported.
+    { nixpkgs.overlays = [ umbraOverlay ]; }
 
-      serviceConfig = {
-        User = "root";
-        Type = "simple";
-        Restart = "on-failure";
-        RestartSec = "5s";
-        ExecStart = ''
-          ${cfg.package}/bin/umbra daemon -no-tray \
-            -vpn-dir ${cfg.vpnDir} \
-            -trusted-prefixes ${lib.concatStringsSep "," cfg.trustedPrefixes} \
-            ${lib.optionalString (cfg.configFile != null) "-config ${cfg.configFile}"} \
-            ${lib.optionalString (cfg.configFile == null && cfg.noConfig) "-no-config"} \
-            ${lib.optionalString (cfg.logFile != null) "-log ${cfg.logFile}"} \
-            ${lib.optionalString (cfg.allowUser != null) "-allow-user ${cfg.allowUser}"} \
-            ${lib.escapeShellArgs cfg.extraArgs}
-        '';
-        NoNewPrivileges = true;
-        ProtectHome = true;
-        ProtectSystem = "strict";
-        PrivateTmp = true;
-        CapabilityBoundingSet = "";
+    (mkIf cfg.enable {
+      systemd.services.umbra = {
+        description = "Umbra VPN Controller Daemon";
+        after = [ "network.target" ];
+        wantedBy = [ "multi-user.target" ];
+
+        serviceConfig = {
+          User = "root";
+          Type = "simple";
+          Restart = "on-failure";
+          RestartSec = "5s";
+          ExecStart = ''
+            ${cfg.package}/bin/umbra daemon -no-tray \
+              -vpn-dir ${cfg.vpnDir} \
+              -trusted-prefixes ${lib.concatStringsSep "," cfg.trustedPrefixes} \
+              ${lib.optionalString (cfg.configFile != null) "-config ${cfg.configFile}"} \
+              ${lib.optionalString (cfg.configFile == null && cfg.noConfig) "-no-config"} \
+              ${lib.optionalString (cfg.logFile != null) "-log ${cfg.logFile}"} \
+              ${lib.optionalString (cfg.allowUser != null) "-allow-user ${cfg.allowUser}"} \
+              ${lib.escapeShellArgs cfg.extraArgs}
+          '';
+          NoNewPrivileges = true;
+          ProtectHome = true;
+          ProtectSystem = "strict";
+          PrivateTmp = true;
+          CapabilityBoundingSet = "";
+        };
       };
-    };
 
-    # Ensure vpnDir exists
-    systemd.tmpfiles.rules = [
-      "d ${cfg.vpnDir} 0755 root root -"
-    ];
+      # Ensure vpnDir exists
+      systemd.tmpfiles.rules = [
+        "d ${cfg.vpnDir} 0755 root root -"
+      ];
 
-    # Informational warning about VPN packages
-    warnings = optional (cfg.enable) ''
-      Umbra VPN daemon is enabled. Ensure VPN client packages (e.g., wireguard-tools, openvpn)
-      are installed if needed. Set services.umbra.package to configure the umbra binary.
-    '';
-  };
+      # Informational warning about VPN packages
+      warnings = optional (cfg.enable) ''
+        Umbra VPN daemon is enabled. Ensure VPN client packages (e.g., wireguard-tools, openvpn)
+        are installed if needed. Set services.umbra.package to configure the umbra binary.
+      '';
+    })
+  ];
 }
