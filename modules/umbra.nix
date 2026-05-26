@@ -4,15 +4,23 @@ with lib;
 
 let
   cfg = config.services.umbra;
+
+  # Automatically provide the overlay so pkgs.umbra and pkgs.umbra-headless
+  # are available when this module is imported.
+  umbraOverlay = final: prev: {
+    umbra = final.callPackage ../pkgs/umbra/default.nix {};
+    umbra-headless = final.callPackage ../pkgs/umbra/default.nix { buildHeadless = true; };
+  };
 in {
+  nixpkgs.overlays = [ umbraOverlay ];
   options.services.umbra = {
     enable = mkEnableOption "Umbra VPN controller daemon";
 
     package = mkOption {
       type = types.package;
-      default = pkgs.umbra-headless;
-      defaultText = literalExpression "pkgs.umbra-headless";
-      description = "Umbra package to use (defaults to headless for server mode).";
+      default = pkgs.umbra;
+      defaultText = literalExpression "pkgs.umbra";
+      description = "Umbra package to use (defaults to full build with TUI/tray).";
     };
 
     vpnDir = mkOption {

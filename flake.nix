@@ -22,7 +22,7 @@
       umbra-headless = final.callPackage ./pkgs/umbra/default.nix { buildHeadless = true; };
     };
 
-    # Usage — add to your module imports:
+    # Usage — add to your module imports (overlay auto-imported):
     #   imports = [ (import ./flake.nix).outputs.nixosModules.umbra ];
     # Then enable with:
     #   services.umbra.enable = true;
